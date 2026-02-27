@@ -12,7 +12,10 @@ import os
 
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
-TARGET_SENDER = os.getenv("TARGET_SENDER")
+TARGET_SENDERS = os.getenv("TARGET_SENDER").split(",")
+# Inside email loop
+if sender_email in TARGET_SENDERS:
+    print("Matched one of the target emails!")
 
 TWILIO_SID = os.getenv("TWILIO_SID")
 TWILIO_AUTH = os.getenv("TWILIO_AUTH")
