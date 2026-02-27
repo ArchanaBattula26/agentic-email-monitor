@@ -61,7 +61,7 @@ def check_email():
         mail_ids = messages[0].split()
         for mail_id in messages[0].split():
             print("Found mail id:", mail_id)    
-            
+
 
         for mail_id in mail_ids:
             status, msg_data = mail.fetch(mail_id, "(RFC822)")
@@ -74,7 +74,8 @@ def check_email():
                     sender_email = parseaddr(sender)[1]
 
                     # Check if sender is in target list
-                    if sender_email in TARGET_SENDERS:
+                    # if sender_email in TARGET_SENDERS:
+                    if any(target.strip().lower() in sender_email.lower() for target in TARGET_SENDERS):
 
                         subject, encoding = decode_header(msg["Subject"])[0]
                         if isinstance(subject, bytes):
