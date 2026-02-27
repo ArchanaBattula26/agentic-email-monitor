@@ -1,10 +1,10 @@
 import imaplib
 import email
 from email.header import decode_header
+from email.utils import parseaddr
 import time
 from twilio.rest import Client
 import os
-
 
 # ==============================
 # Load Environment Variables
@@ -13,9 +13,6 @@ import os
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 TARGET_SENDERS = os.getenv("TARGET_SENDER").split(",")
-# Inside email loop
-if sender_email in TARGET_SENDERS:
-    print("Matched one of the target emails!")
 
 TWILIO_SID = os.getenv("TWILIO_SID")
 TWILIO_AUTH = os.getenv("TWILIO_AUTH")
@@ -26,7 +23,6 @@ YOUR_WHATSAPP = os.getenv("YOUR_WHATSAPP")
 required_vars = [
     EMAIL_USER,
     EMAIL_PASS,
-    TARGET_SENDER,
     TWILIO_SID,
     TWILIO_AUTH,
     TWILIO_WHATSAPP,
@@ -58,7 +54,8 @@ def check_email():
         mail.login(EMAIL_USER, EMAIL_PASS)
         mail.select("inbox")
 
-        status, messages = mail.search(None, f'(UNSEEN FROM "{TARGET_SENDER}")')
+        # Search all UNSEEN emails
+        status, messages = mail.search(None, "UNSEEN")
         mail_ids = messages[0].split()
 
         for mail_id in mail_ids:
@@ -68,20 +65,24 @@ def check_email():
                 if isinstance(response_part, tuple):
                     msg = email.message_from_bytes(response_part[1])
 
-                    subject, encoding = decode_header(msg["Subject"])[0]
-                    if isinstance(subject, bytes):
-                        subject = subject.decode(encoding if encoding else "utf-8")
-
                     sender = msg.get("From")
+                    sender_email = parseaddr(sender)[1]
 
-                    whatsapp_message = f"""
+                    # Check if sender is in target list
+                    if sender_email in TARGET_SENDERS:
+
+                        subject, encoding = decode_header(msg["Subject"])[0]
+                        if isinstance(subject, bytes):
+                            subject = subject.decode(encoding if encoding else "utf-8")
+
+                        whatsapp_message = f"""
 📧 New Email Alert!
 
-From: {sender}
+From: {sender_email}
 Subject: {subject}
-                    """
+                        """
 
-                    send_whatsapp(whatsapp_message)
+                        send_whatsapp(whatsapp_message)
 
         mail.logout()
 
@@ -92,4 +93,4 @@ if __name__ == "__main__":
     print("Agent started... Monitoring emails...")
     while True:
         check_email()
-        time.sleep(30)  # checks every 30 seconds
+        time.sleep(30)
