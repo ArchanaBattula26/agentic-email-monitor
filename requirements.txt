@@ -1,5 +1,2 @@
 twilio
 python-dotenv
-os
-imaplib
-email
