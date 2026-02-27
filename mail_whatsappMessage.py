@@ -56,7 +56,12 @@ def check_email():
 
         # Search all UNSEEN emails
         status, messages = mail.search(None, "UNSEEN")
+        print("IMAP status:", status)
+        print("Messages returned:", messages)
         mail_ids = messages[0].split()
+        for mail_id in messages[0].split():
+            print("Found mail id:", mail_id)    
+            
 
         for mail_id in mail_ids:
             status, msg_data = mail.fetch(mail_id, "(RFC822)")
